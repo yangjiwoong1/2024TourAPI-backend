@@ -10,7 +10,8 @@ class UserRegisterView(CreateAPIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
-        serializer = self.get_serializer(data=request.data)
+        payload = request.data.get('payload', {})
+        serializer = self.get_serializer(data=payload)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
