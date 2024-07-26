@@ -18,14 +18,14 @@ class UserRegisterView(CreateAPIView):
             status_code = status.HTTP_201_CREATED
             res = {
                 'success': "true",
-                'status code': status_code,
+                'status_code': status_code,
                 "user": serializer.data,
             }
         else:
             status_code = status.HTTP_409_CONFLICT
             res = {
                 'success': "false",
-                'status code': status_code,
+                'status_code': status_code,
                 "message": serializer.errors,
             }
 
