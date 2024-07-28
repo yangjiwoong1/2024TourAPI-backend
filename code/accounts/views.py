@@ -25,7 +25,7 @@ class UserRegisterView(CreateAPIView):
             return Response(res, status=res['status_code'], headers=headers)
         except ValidationError as e:
             # 유효성 검증(serializer.is_valid())에 대한 에러
-            status_code = status.HTTP_409_CONFLICT
+            status_code = status.HTTP_400_BAD_REQUEST
             error_message = e.detail
         except Exception as e:
             # 기타 예외 처리
