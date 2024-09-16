@@ -15,12 +15,6 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 
         return user
 
-    # Equivalent to the following code:
-    # def create(self, validated_data):
-    #     user = User.objects.create_user(
-    #         username = validated_data['username'],
-    #         nation = validated_data['nation'],
-    #         nickname = validated_data['nickname'],
-    #         password = validated_data['password']
-    #     )
-    #     return user
+class UserLoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
