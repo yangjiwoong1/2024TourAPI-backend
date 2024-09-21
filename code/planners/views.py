@@ -68,3 +68,23 @@ class DestinationView(APIView):
             'message': serializer.errors
         }
         return Response(res, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, destinationId):
+        try:
+            destination = Destination.objects.get(pk=destinationId)
+            destination_data = DestinationSerializer(destination).data
+            destination.delete()
+            res = {
+                'success': True,
+                'status_code': status.HTTP_204_NO_CONTENT,
+                'message': '여행지가 삭제되었습니다.',
+                'deleted_destination': destination_data
+            }
+            return Response(res, status=status.HTTP_204_NO_CONTENT)
+        except Destination.DoesNotExist:
+            res = {
+                'success': False,
+                'status_code': status.HTTP_404_NOT_FOUND,
+                'message': '해당 목적지가 존재하지 않습니다.'
+            }
+            return Response(res, status=status.HTTP_404_NOT_FOUND)
