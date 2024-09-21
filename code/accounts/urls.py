@@ -12,5 +12,5 @@ urlpatterns = [
     path('nickname-validation/', NicknameValidationView.as_view(), name='nickname-validation'),
     path('<str:username>/', UserProfileView.as_view(), name='user-profile'),
     path('<str:username>/favorites/places/', PlaceView.as_view(), name='get-favorites'),
-    path('<str:username>/plans/', UserPlansView.as_view(), name='get-plans'),
+    path('<str:username>/plans/', PlanView.as_view(), name='get-plans'),
 ]

@@ -24,7 +24,6 @@ class PlanView(APIView):
         }
         return Response(res, status=status.HTTP_400_BAD_REQUEST)
     
-class UserPlansView(APIView):
     def get(self, request, username):
         user, response = check_user_existence(username)
         if not user:
@@ -42,6 +41,50 @@ class UserPlansView(APIView):
         }
         return Response(res, status=status.HTTP_200_OK)
     
+    def patch(self, request, planId):
+        try:
+            plan = Plan.objects.get(pk=planId)
+        except Plan.DoesNotExist:
+            return Response({
+                'success': False,
+                'status_code': status.HTTP_404_NOT_FOUND,
+                'message': '플래너가 존재하지 않습니다.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = PlanSerializer(plan, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            res = {
+                'success': True,
+                'status_code': status.HTTP_200_OK,
+                'plan': serializer.data
+            }
+            return Response(res, status=status.HTTP_200_OK)
+
+        res = {
+            'success': False,
+            'status_code': status.HTTP_400_BAD_REQUEST,
+            'message': serializer.errors
+        }
+        return Response(res, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, planId):
+        try:
+            plan = Plan.objects.get(pk=planId)
+            plan.delete()
+            res = {
+                'success': True,
+                'status_code': status.HTTP_204_NO_CONTENT,
+                'message': '플래너가 삭제되었습니다.'
+            }
+            return Response(res, status=status.HTTP_204_NO_CONTENT)
+        except Plan.DoesNotExist:
+            return Response({
+                'success': False,
+                'status_code': status.HTTP_404_NOT_FOUND,
+                'message': '플래너가 존재하지 않습니다.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
 class DestinationView(APIView):
     def post(self, request):
         serializer = DestinationSerializer(data=request.data)
