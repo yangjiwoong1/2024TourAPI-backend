@@ -8,5 +8,8 @@ class Place(models.Model):
     gpsX = models.DecimalField(max_digits=10, decimal_places=7)
     gpsY = models.DecimalField(max_digits=10, decimal_places=7)
 
+    class Meta:
+        unique_together = ('username', 'content_id')
+
     def __str__(self):
         return self.content_title
