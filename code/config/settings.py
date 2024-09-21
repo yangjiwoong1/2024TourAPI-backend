@@ -47,6 +47,7 @@ INSTALLED_APPS = [
 
     # 생성 앱
     'accounts.apps.AccountsConfig',
+    'favorites.apps.FavoritesConfig',
 
     # 설치 라이브러리
     'rest_framework',
