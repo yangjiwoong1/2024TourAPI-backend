@@ -7,6 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenRefreshView
+from django.utils import timezone
 from .serializers import *
 
 class UserRegisterView(CreateAPIView):
@@ -55,6 +56,9 @@ def user_login_view(request):
             'message': '아이디 또는 비밀번호가 일치하지 않습니다.'
         }
         return Response(res, status=status.HTTP_401_UNAUTHORIZED)
+    
+    user.last_login = timezone.now()
+    user.save()
 
     refresh = RefreshToken.for_user(user)
     refresh['username'] = user.username
