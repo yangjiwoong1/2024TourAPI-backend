@@ -2,8 +2,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Plan, Destination
-from collections import defaultdict
 from .serializers import PlanSerializer, DestinationSerializer
+from utils import check_user_existence
 
 class PlanView(APIView):
     def post(self, request):
@@ -23,6 +23,24 @@ class PlanView(APIView):
             'message': serializer.errors
         }
         return Response(res, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserPlansView(APIView):
+    def get(self, request, username):
+        user, response = check_user_existence(username)
+        if not user:
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+
+        search_query = request.GET.get('search', '')
+
+        plans = Plan.objects.filter(creator=user).filter(title__icontains=search_query)
+        serializer = PlanSerializer(plans, many=True)
+
+        res = {
+            'success': True,
+            'status_code': status.HTTP_200_OK,
+            'plans': serializer.data
+        }
+        return Response(res, status=status.HTTP_200_OK)
     
 class DestinationView(APIView):
     def post(self, request):
