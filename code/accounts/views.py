@@ -69,6 +69,7 @@ def user_login_view(request):
         'success': True,
         'status_code': status.HTTP_200_OK,
         'token': {
+            'username': username,
             'refresh_token': str(refresh),
             'access_token': str(access)
         }
