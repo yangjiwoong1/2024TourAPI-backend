@@ -1,7 +1,8 @@
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Destination
+from .models import Plan, Destination
+from collections import defaultdict
 from .serializers import PlanSerializer, DestinationSerializer
 
 class PlanView(APIView):
@@ -42,6 +43,32 @@ class DestinationView(APIView):
         }
         return Response(res, status=status.HTTP_400_BAD_REQUEST)
     
+    def get(self, request, planId):
+        if not Plan.objects.filter(id=planId).exists():
+            return Response({
+                'success': False,
+                'status_code': status.HTTP_404_NOT_FOUND,
+                'message': '해당 플랜이 존재하지 않습니다.'
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        destinations = Destination.objects.filter(plan_id=planId)
+        serializer = DestinationSerializer(destinations, many=True)
+        
+        grouped_by_visit_date = defaultdict(list)
+        for item in serializer.data:
+            visit_date = item['visit_date']
+            grouped_by_visit_date[visit_date].append(item)
+
+        grouped_destinations = [{'visit_date': visit_date, 'destinations': destinations}
+                                for visit_date, destinations in grouped_by_visit_date.items()]
+
+        res = {
+            'success': True,
+            'status_code': status.HTTP_200_OK,
+            'result': grouped_destinations
+        }
+        return Response(res, status=status.HTTP_200_OK)
+
     def patch(self, request, destinationId):
         try:
             destination = Destination.objects.get(pk=destinationId)
