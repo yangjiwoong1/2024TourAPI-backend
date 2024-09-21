@@ -35,3 +35,13 @@ class NicknameValidationSerializer(serializers.Serializer):
         if User.objects.filter(nickname=value).exists():
             raise serializers.ValidationError("존재하는 닉네임입니다.")
         return value
+    
+class UserDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'nickname', 'nation']
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username', 'nation', 'nickname']

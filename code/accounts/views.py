@@ -190,3 +190,50 @@ class NicknameValidationView(APIView):
             return Response(res, status=status.HTTP_400_BAD_REQUEST)
         
         return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserProfileView(APIView):
+    def get_user(self, username):
+        try:
+            user = User.objects.get(username=username)
+            return user, None
+        except User.DoesNotExist:
+            return None, {
+                'success': False,
+                'status_code': status.HTTP_404_NOT_FOUND,
+                'message': '사용자를 찾을 수 없습니다.'
+            }
+
+    def get(self, request, username):
+        user, response = self.get_user(username)
+        if response:
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = UserDetailSerializer(user)
+        res = {
+            'success': True,
+            'status_code': status.HTTP_200_OK,
+            'user': serializer.data
+        }
+        return Response(res, status=status.HTTP_200_OK)
+    
+    def patch(self, request, username):
+        user, response = self.get_user(username)
+        if response:
+            return Response(response, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = UserUpdateSerializer(user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            res = {
+                'success': True,
+                'status_code': status.HTTP_200_OK,
+                'user': serializer.data
+            }
+            return Response(res, status=status.HTTP_200_OK)
+        
+        res = {
+            'success': False,
+            'status_code': status.HTTP_400_BAD_REQUEST,
+            'message': serializer.errors
+        }
+        return Response(res, status=status.HTTP_400_BAD_REQUEST)

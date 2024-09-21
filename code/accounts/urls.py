@@ -7,6 +7,6 @@ urlpatterns = [
     path('refresh/', AccessTokenRefreshView.as_view(), name='token-refresh'),
     path('test-auth/', test_auth_view, name='auth-test'),
     path('username-validation/', UsernameValidationView.as_view(), name='username-validation'),
-    path('nickname-validation/', NicknameValidationView.as_view(), name='nickname-validation')
-
+    path('nickname-validation/', NicknameValidationView.as_view(), name='nickname-validation'),
+    path('<str:username>/', UserProfileView.as_view(), name='user-profile'),
 ]
