@@ -18,3 +18,20 @@ class UserRegisterSerializer(serializers.ModelSerializer):
 class UserLoginSerializer(serializers.Serializer):
     username = serializers.CharField(required=True)
     password = serializers.CharField(required=True, write_only=True)
+
+class UsernameValidationSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=150, required=True)
+
+    def validate_username(self, value):
+        # 150자 제한은 CharField에서 처리
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("존재하는 ID입니다.")
+        return value
+    
+class NicknameValidationSerializer(serializers.Serializer):
+    nickname = serializers.CharField(max_length=100, required=True)
+
+    def validate_nickname(self, value):
+        if User.objects.filter(nickname=value).exists():
+            raise serializers.ValidationError("존재하는 닉네임입니다.")
+        return value
