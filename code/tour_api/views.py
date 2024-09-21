@@ -41,6 +41,7 @@ class TouristAttractionView(APIView):
                 'contentid': item.get('contenttypeid'),
                 'addr1': item.get('addr1'),
                 'areacode': item.get('areacode'),
+                'sigungucode': item.get('sigungucode'),
                 'firstimage2': item.get('firstimage2'),
                 'modifiedtime': item.get('modifiedtime'),
                 'tel': item.get('tel')
