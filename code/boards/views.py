@@ -2,7 +2,7 @@ from datetime import timedelta
 from django.utils import timezone
 from rest_framework import generics, permissions, status
 from .models import Post, Comment, Like, Image
-from .serializers import CommentSerializer, PostSerializer, LikeSerializer, PostPreviewSerializer
+from .serializers import CommentSerializer, PostSerializer, LikeSerializer, PostPreviewSerializer,PopularPostPreviewSerializer
 from rest_framework.response import Response
 from django.db.models import Count,Q
 import reverse_geocode
@@ -69,6 +69,7 @@ class PostRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
         # 응답 데이터 구성
         post_response = {
             "author": post.author.username,
+            "author_nickname": post.author.nickname,
             "created_or_updated": created_or_updated,
             "views": post.views,
             "like_count": like_count,
@@ -152,13 +153,14 @@ class PostPagination(PageNumberPagination):
 
 #인기 게시물 보기
 class PopularPostListAPIView(generics.ListAPIView):
-    serializer_class = PostSerializer
+    serializer_class = PopularPostPreviewSerializer
     pagination_class = PostPagination
+
     def get_queryset(self):
         period = self.kwargs.get('period')
         now = timezone.now()
 
-        if period =='daily' : 
+        if period == 'daily':
             start_date = now - timedelta(days=1)
         elif period == 'weekly':
             start_date = now - timedelta(weeks=1)
@@ -166,36 +168,53 @@ class PopularPostListAPIView(generics.ListAPIView):
             start_date = now - timedelta(days=30)
         else:
             return Post.objects.none()
-        print(start_date)
-        return Post.objects.annotate(
-                like_count=Count('likes')
-                ).filter(
-                    created_at__gte=start_date,
-                    like_count__gte=10  # 좋아요 10개 이상
-                ).order_by('-like_count')  # 좋아요 수 많은 순으로 정렬
 
+        return Post.objects.annotate(
+            like_count=Count('likes'),
+            comments_count=Count('comments')
+        ).filter(
+            created_at__gte=start_date,
+            like_count__gte=10  # 좋아요 10개 이상
+        ).order_by('-like_count')  # 좋아요 수 많은 순으로 정렬
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         if not queryset.exists():
             return Response(
-                {   'success': "True",
-                    'status_code': status.HTTP_200_OK,   
+                {
+                    'success': "True",
+                    'status_code': status.HTTP_200_OK,
                     "message": "인기 게시글 없음",
-                    "popular_posts":[]},
+                    "popular_posts": []
+                },
                 status=status.HTTP_200_OK
             )
-        
 
         serializer = self.get_serializer(queryset, many=True)
+        popular_posts = []
+        
+        # 강제로 like_count와 comments_count 추가
+        for post, data in zip(queryset, serializer.data):
+            post_response = {
+                "id": post.id,
+                "author": post.author.username,
+                "author_nickname": post.author.nickname,
+                "title": post.title,
+                "views": post.views,
+                "like_count": post.like_count,  # annotate된 필드 사용
+                "comments_count": post.comments_count  # annotate된 필드 사용
+            }
+            popular_posts.append(post_response)
+
         return Response(
-                {   'success': "True",
-                    'status_code': status.HTTP_200_OK,   
-                    "message": "인기 게시글 호출",
-                    "popular_posts":serializer.data},
-                status=status.HTTP_200_OK
-            )
-    
+            {
+                'success': "True",
+                'status_code': status.HTTP_200_OK,
+                "message": "인기 게시글 호출",
+                "popular_posts": popular_posts
+            },
+            status=status.HTTP_200_OK
+        )
 
 
 
@@ -367,13 +386,11 @@ class CommentPagination(PageNumberPagination):
 
 
 #댓글 C api
+
 class CommentListCreateAPIView(generics.ListCreateAPIView):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthorOrAdmin]
 
-
-    def perform_create(self, serializer):
-        serializer.save(author=self.request.user)  # author를 현재 로그인한 사용자로 설정
     def get_queryset(self):
         post_id = self.kwargs.get('post_id')
         return Comment.objects.filter(post_id=post_id).order_by('-created_at')
@@ -385,21 +402,23 @@ class CommentListCreateAPIView(generics.ListCreateAPIView):
         except Post.DoesNotExist:
             return Response({
                 "success": "false",
-                "status code": status.HTTP_404_NOT_FOUND,
+                "status_code": status.HTTP_404_NOT_FOUND,
                 "message": "게시글을 찾을 수 없음"
             }, status=status.HTTP_404_NOT_FOUND)
-
+        
         # 댓글 생성
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(post_id=post, author=request.user)
+
+        # author를 현재 로그인한 사용자로 설정
+        serializer.save(post_id=post)  # post를 올바르게 설정
         return Response({
             "success": "true",
-            "status code": status.HTTP_201_CREATED,
+            "status_code": status.HTTP_201_CREATED,
             "message": "댓글 생성",
             "comment": serializer.data
         }, status=status.HTTP_201_CREATED)
-    
+
 
     
 

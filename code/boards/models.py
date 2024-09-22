@@ -4,7 +4,7 @@ from django.conf import settings
 
 ##글
 class Post(models.Model):
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)  
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, to_field='username', on_delete=models.CASCADE)  
     title = models.CharField(max_length=255)
     content = models.TextField()
     views = models.PositiveIntegerField(default=0)
@@ -20,7 +20,7 @@ class Post(models.Model):
 ## 댓글
 class Comment(models.Model):    
     post_id = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
-    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) 
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, to_field='username',on_delete=models.CASCADE) 
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -32,7 +32,7 @@ class Comment(models.Model):
 ## 좋아요
 class Like(models.Model):
     post_id = models.ForeignKey(Post, related_name='likes', on_delete=models.CASCADE)  # 연결된 게시물
-    liked_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    liked_by = models.ForeignKey(settings.AUTH_USER_MODEL, to_field='username',on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)  # 좋아요 누른 날짜
 
     def __str__(self):
