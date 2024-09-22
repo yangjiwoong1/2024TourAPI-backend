@@ -91,7 +91,7 @@ class TouristAttractionDetailView(APIView):
                 'contenttypeid': item.get('contenttypeid'),
                 'title': item.get('title'),
                 'tel': item.get('tel'),
-                'homepage': item.get('hompage'),
+                'homepage': item.get('homepage'),
                 'modifiedtime': item.get('modifiedtime'),
                 'firstimage': item.get('firstimage'),
                 'firstimage2': item.get('firstimage2'),
