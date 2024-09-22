@@ -45,3 +45,28 @@ def fetch_detailCommon1(contentId, limit, page):
     print(API_KEY)
 
     return response
+
+def fetch_locationBasedList1(map_x, map_y, radius, limit, page, arrange=None, content_type_id=None):
+    base_url = 'http://apis.data.go.kr/B551011/EngService1/locationBasedList1'
+    params = {
+        'serviceKey': API_KEY,
+        'numOfRows': limit,
+        'pageNo': page,
+        'MobileOS': 'AND',
+        'MobileApp': 'Welcome',
+        '_type': 'json',
+        'mapX': map_x,
+        'mapY': map_y,
+        'radius': radius
+    }
+
+    if arrange:
+        params['arrange'] = arrange
+
+    if content_type_id:
+        params['contentTypeId'] = content_type_id
+
+    response = requests.get(base_url, params=params)
+    print(API_KEY)
+
+    return response
