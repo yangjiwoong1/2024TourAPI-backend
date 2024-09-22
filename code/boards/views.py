@@ -40,11 +40,11 @@ def user_areacode(latitude, longitude):
      
     return areacodes[user_xy] 
 
-
-#Retrieve api
-class PostDetailView(generics.RetrieveAPIView):
+# 수정 삭제 보기
+class PostRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+    permission_classes = [IsAuthorOrAdmin]  # 수정, 삭제 권한 관리
 
     def retrieve(self, request, *args, **kwargs):
         post = self.get_object()
@@ -66,8 +66,8 @@ class PostDetailView(generics.RetrieveAPIView):
         serializer = self.get_serializer(post)
         post_data = serializer.data
 
-        
-        post = {
+        # 응답 데이터 구성
+        post_response = {
             "author": post.author.username,
             "created_or_updated": created_or_updated,
             "views": post.views,
@@ -79,55 +79,13 @@ class PostDetailView(generics.RetrieveAPIView):
 
         return Response(
             {
-                "success":True,
-                "status_code" : status.HTTP_200_OK,
-                "message" : "게시글 조회",
-                "post" : post
+                "success": True,
+                "status_code": status.HTTP_200_OK,
+                "message": "게시글 조회 성공",
+                "post": post_response
             },
-            status = status.HTTP_200_OK
+            status=status.HTTP_200_OK
         )
-
-#Update, Delete api
-class PostUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-    permission_classes = [IsAuthorOrAdmin]
-
-    def delete(self, request,pk):
-        #try:
-        post = self.get_object()
-        
-        
-        #response가 동작하지 않음 ->이유는 permission을 건드려야한다는데 이건 추후 수정하겠습니다. 
-        
-        '''
-        
-        except NotFound:
-            return Response(
-                {
-                    "success": False,
-                    "status_code": status.HTTP_404_NOT_FOUND,
-                    "message": "게시글을 찾을 수 없습니다."
-            },
-            status=status.HTTP_404_NOT_FOUND
-            )
-        
-        if post.author != request.user:
-            return Response(
-                {
-                    "success" : "false",
-                    "status_code" : status.HTTP_403_FORBIDDEN,
-                    "message": "게시글 삭제 권한 없음"
-                },
-                status = status.HTTP_403_FORBIDDEN
-            )
-        '''
-        self.perform_destroy(post)
-        return Response(
-                {   "success": "True",
-                    "status_code": status.HTTP_204_NO_CONTENT,   
-                    "message": "게시글 삭제",
-                }, status=status.HTTP_204_NO_CONTENT)
 
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)  # PATCH 요청 시 부분 업데이트 가능
@@ -136,59 +94,6 @@ class PostUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
         title = request.data.get('title')
         content = request.data.get('content')
 
-        errors = {}
-        if not title:
-             errors['title'] = ["제목을 입력해야 합니다."]
-        if not content:
-            errors['content'] = ["내용을 입력해야 합니다."]
-    
-        if errors:
-            return Response(
-                {
-                "success": False,
-                "status_code": 400,
-                "message": errors
-                },
-            status=status.HTTP_400_BAD_REQUEST
-            )
-
-
-
-        serializer = self.get_serializer(post, data=request.data, partial=partial)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {
-                    "success": True,
-                    "status_code": status.HTTP_200_OK,
-                    "message": '게시글 수정',
-                    "post": serializer.data
-                },
-                status=status.HTTP_200_OK
-            )
-        return Response(
-            {
-                'success': False,
-                'status_code': 400,
-                'message': serializer.errors
-            },
-            status=status.HTTP_400_BAD_REQUEST
-        )
-
-#Create api
-class PostCreateAPIView(generics.CreateAPIView):
-    queryset = Post.objects.all()
-    serializer_class = PostSerializer
-    permission_classes =  [IsAuthorOrAdmin]
-
-    def create(self, request, *args, **kwargs):
-        # 게시글 생성 데이터 받기
-        title = request.data.get('title')
-        content = request.data.get('content')
-        hashtags = request.data.get('hashtags')
-        area_code = request.data.get('area_code')
-        images = request.FILES.getlist('images')  # 이미지 여러 개 처리 가능하게
         errors = {}
         if not title:
             errors['title'] = ["제목을 입력해야 합니다."]
@@ -205,32 +110,40 @@ class PostCreateAPIView(generics.CreateAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # 게시글 생성
-        post = Post.objects.create(
-            author=request.user,
-            title=title,
-            content=content,
-            hashtags=hashtags,
-            area_code=area_code,
+        serializer = self.get_serializer(post, data=request.data, partial=partial)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {
+                    "success": True,
+                    "status_code": status.HTTP_200_OK,
+                    "message": '게시글 수정 성공',
+                    "post": serializer.data
+                },
+                status=status.HTTP_200_OK
+            )
+        return Response(
+            {
+                'success': False,
+                'status_code': 400,
+                'message': serializer.errors
+            },
+            status=status.HTTP_400_BAD_REQUEST
         )
 
-        # 이미지가 있으면 저장
-        if images:
-            for image_url in images:
-                Image.objects.create(post_id=post, url=image_url)
+    def delete(self, request, *args, **kwargs):
+        post = self.get_object()
 
-
-        
-    
-        serializer = self.get_serializer(post)
+        # 권한 확인은 IsAuthorOrAdmin으로 처리
+        self.perform_destroy(post)
         return Response(
-                {   'success': "True",
-                    'status_code': status.HTTP_201_CREATED,   
-                    "message": "게시글 생성",
-                    "post":serializer.data},
-                status=status.HTTP_201_CREATED
-            )
-            
+            {
+                "success": True,
+                "status_code": status.HTTP_204_NO_CONTENT,
+                "message": "게시글 삭제 성공"
+            },
+            status=status.HTTP_204_NO_CONTENT
+        )
 
 
 #페이지네이션
@@ -287,7 +200,7 @@ class PopularPostListAPIView(generics.ListAPIView):
 
 
 
-#post 전체 보기
+#post 전체 보기 및 생성
 
 class PostListView(generics.ListAPIView):
     serializer_class = PostPreviewSerializer
@@ -327,7 +240,6 @@ class PostListView(generics.ListAPIView):
 
         return queryset
 
-        return queryset
     def get(self, request):
         queryset = self.get_queryset()
         if not queryset.exists():
@@ -346,8 +258,59 @@ class PostListView(generics.ListAPIView):
             "message": "게시물 목록 조회 성공",
             "posts": serializer.data  
         }, status=status.HTTP_200_OK)
+    def post(self, request, *args, **kwargs):
+    # 권한 확인
+        permission_classes = [IsAuthorOrAdmin]
+    
+    # 게시글 생성 데이터 받기
+        title = request.data.get('title')
+        content = request.data.get('content')
+        hashtags = request.data.get('hashtags')
+        area_code = request.data.get('area_code')
+        images = request.FILES.getlist('images')  # 이미지 여러 개 처리 가능하게
+        errors = {}
+    
+    # 제목과 내용 검증
+        if not title:
+            errors['title'] = ["제목을 입력해야 합니다."]
+        if not content:
+            errors['content'] = ["내용을 입력해야 합니다."]
+    
+        if errors:
+            return Response(
+                {
+                    "success": False,
+                    "status_code": 400,
+                    "message": errors
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
+    # 게시글 생성
+        post = Post.objects.create(
+            author=request.user,
+            title=title,
+            content=content,
+            hashtags=hashtags,
+            area_code=area_code,
+        )
 
+    # 이미지가 있으면 저장
+        if images:
+            for image_url in images:
+                Image.objects.create(post_id=post, url=image_url)
+
+    # 게시글 직렬화 및 응답
+        serializer = self.get_serializer(post)
+        return Response(
+            {
+                'success': "True",
+                'status_code': status.HTTP_201_CREATED,   
+                "message": "게시글 생성 성공",
+                "post": serializer.data
+            },
+            status=status.HTTP_201_CREATED
+        )
 
 #좋아요 api
 class ToggleLikeAPIView(generics.GenericAPIView):
