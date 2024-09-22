@@ -58,7 +58,7 @@ class TouristAttractionView(APIView):
         }
         return Response(res, status=status.HTTP_200_OK)
 
-class TouristAttractionDetailView(APIView):
+class TouristAttractionDetailCommonView(APIView):
     def get(self, request, contentId):
         limit = request.GET.get('limit', 10)
         page = request.GET.get('page', 1)
@@ -111,6 +111,41 @@ class TouristAttractionDetailView(APIView):
             'success': True,
             'status_code': status.HTTP_200_OK,
             'results': filtered_items
+        }
+        return Response(res, status=status.HTTP_200_OK)
+
+class TouristAttractionDetailIntroView(APIView):
+    def get(self, request, contentId):
+        content_type_id = request.GET.get('contentTypeId') # required
+        limit = request.GET.get('limit', 10)
+        page = request.GET.get('page', 1)
+
+        response = fetch_detailIntro1(contentId, content_type_id, limit, page)
+
+        try:
+            response.raise_for_status()
+            data = response.json()
+            if data.get("response", {}).get("body", {}).get("items", {}):
+                items = data.get("response", {}).get("body", {}).get("items", {}).get("item", [])
+            else:
+                items = []
+        except requests.HTTPError as http_err:
+            return Response({
+                'success': False,
+                'status_code': status.HTTP_500_INTERNAL_SERVER_ERROR,
+                'message': f'HTTP 에러 발생: {http_err}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        except Exception as err:
+            return Response({
+                'success': False,
+                'status_code': status.HTTP_500_INTERNAL_SERVER_ERROR,
+                'message': f'에러 발생: {err}'
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        res = {
+            'success': True,
+            'status_code': status.HTTP_200_OK,
+            'results': items
         }
         return Response(res, status=status.HTTP_200_OK)
 
