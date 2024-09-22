@@ -29,10 +29,12 @@ env = environ.Env(
 environ.Env.read_env()
 
 SECRET_KEY = env('SECRET_KEY')
+API_KEY = env('API_KEY')
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -47,7 +49,9 @@ INSTALLED_APPS = [
 
     # 생성 앱
     'accounts.apps.AccountsConfig',
-    'boards',   
+    'boards.apps.BoardsConfig',
+    'favorites.apps.FavoritesConfig',
+    'planners.apps.PlannersConfig',
 
     # 설치 라이브러리
     'rest_framework',
