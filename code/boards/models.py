@@ -19,20 +19,30 @@ class Post(models.Model):
 
 ## 댓글
 class Comment(models.Model):    
-    post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
+    post_id = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) 
     content = models.TextField()
-    hearts = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'글 제목 : {self.post.title} 댓글 작성자 {self.author.username}'
+        return f'글 제목 : {self.post.title} 댓글 작성자 : {self.author.username}'
 
 
+## 좋아요
+class Like(models.Model):
+    post_id = models.ForeignKey(Post, related_name='likes', on_delete=models.CASCADE)  # 연결된 게시물
+    liked_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)  # 좋아요 누른 날짜
 
-##하트
+    def __str__(self):
+        return f'좋아요한 사용자 : {self.liked_by.username} 좋아요한 게시물 : {self.post.title}'
 
 
+##이미지
+class Image(models.Model):
+    post_id = models.ForeignKey(Post, related_name='images', on_delete=models.CASCADE)  # 연결된 게시물
+    url = models.URLField(max_length=512)  # 이미지 URL
 
-## 이미지
+    def __str__(self):
+        return f'post 제목 {self.post.title}'

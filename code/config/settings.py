@@ -47,11 +47,12 @@ INSTALLED_APPS = [
 
     # 생성 앱
     'accounts.apps.AccountsConfig',
-    'boards'
+    'boards',   
 
     # 설치 라이브러리
     'rest_framework',
     'rest_framework_simplejwt',
+    'django_filters',
 ]
 
 AUTH_USER_MODEL = 'accounts.User'
@@ -100,7 +101,7 @@ SIMPLE_JWT = {
     "JTI_CLAIM": "jti",
 
     "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
-    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
+    "SLIDING_TOKEN_LIFETIME": timedelta(minutes=100000),
     "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
 
     "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
