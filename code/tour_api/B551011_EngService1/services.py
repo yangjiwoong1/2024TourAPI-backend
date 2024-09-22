@@ -38,7 +38,8 @@ def fetch_detailCommon1(contentId, limit, page):
         'firstImageYN': 'Y',
         'areacodeYN': 'Y',
         'addrinfoYN': 'Y',
-        'mapinfoYN': 'Y'
+        'mapinfoYN': 'Y',
+        'overviewYN': 'Y'
     }
 
     response = requests.get(base_url, params=params)

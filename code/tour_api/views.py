@@ -101,7 +101,8 @@ class TouristAttractionDetailView(APIView):
                 'addr2': item.get('addr2'),
                 'zipcode': item.get('zipcode'),
                 'mapx': item.get('mapx'),
-                'mapy': item.get('mapy')
+                'mapy': item.get('mapy'),
+                'overview': item.get('overview'),
             }
             for item in items
         ]
