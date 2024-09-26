@@ -23,18 +23,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 env = environ.Env(
-    DEBUG=(bool,True)
+    DEBUG=(bool,False)
 )
 
 environ.Env.read_env()
 
 SECRET_KEY = env('SECRET_KEY')
 API_KEY = env('API_KEY')
+BACKEND_URL = env('BACKEND_URL')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [BACKEND_URL]
 
 
 # Application definition
@@ -66,9 +67,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
     'DEFAULT_PERMISSION_CLASSES': (
-        # 'rest_framework.permissions.IsAuthenticated', # authenticated
-        # 'rest_framework.permissions.IsAdminUser', # admin
-        'rest_framework.permissions.AllowAny', # default
+        'rest_framework.permissions.IsAuthenticated', # authenticated
     )
 }
 
