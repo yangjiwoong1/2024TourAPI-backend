@@ -31,6 +31,12 @@ environ.Env.read_env()
 SECRET_KEY = env('SECRET_KEY')
 API_KEY = env('API_KEY')
 BACKEND_URL = env('BACKEND_URL')
+DATABASE_ENGINE = env('DATABASE_ENGINE')
+DATABASE_SCHEMA = env('DATABASE_SCHEMA')
+DATABASE_USER = env('DATABASE_USER')
+DATABASE_USER_PASSWORD = env("DATABASE_USER_PASSWORD")
+DATABASE_HOST = env('DATABASE_HOST')
+DATABASE_PORT = env('DATABASE_PORT')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -149,12 +155,26 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
+# dev_setting
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+# prod_setting
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+    'default' : {
+        'ENGINE': DATABASE_ENGINE,
+        'NAME': DATABASE_SCHEMA,
+        'USER': DATABASE_USER,
+        'PASSWORD': DATABASE_USER_PASSWORD,
+        'HOST': DATABASE_HOST,
+        'PORT': DATABASE_PORT,
     }
 }
+
 
 
 # Password validation
