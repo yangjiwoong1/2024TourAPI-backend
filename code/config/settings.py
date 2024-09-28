@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'boards.apps.BoardsConfig',
     'favorites.apps.FavoritesConfig',
     'planners.apps.PlannersConfig',
+    'weather.apps.WeatherConfig',
+
 
     # 설치 라이브러리
     'rest_framework',
