@@ -40,6 +40,10 @@ def user_areacode(latitude, longitude):
      
     return areacodes[user_xy] 
 
+
+
+
+
 # 수정 삭제 보기
 class PostRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Post.objects.all()
@@ -52,6 +56,7 @@ class PostRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
         # 조회수 증가
         post.views += 1
         post.save()
+        is_author = post.author == request.user
 
         # 수정 여부 및 작성일/수정일 체크
         if post.updated_at > post.created_at:
@@ -75,6 +80,7 @@ class PostRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
             "like_count": like_count,
             "content": post.content,
             "hashtags": post.hashtags,
+            "is_author": is_author,
             "comments": post_data.get('comments'),
         }
 
@@ -94,6 +100,7 @@ class PostRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
 
         title = request.data.get('title')
         content = request.data.get('content')
+        
 
         errors = {}
         if not title:
