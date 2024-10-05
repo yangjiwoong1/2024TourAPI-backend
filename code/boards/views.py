@@ -446,7 +446,7 @@ class CommentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
             return Response({
                 "success": "true",
                 "status_code": status.HTTP_200_OK,
-                "comment": serializer.data
+                "comment": serializer.data,
             }, status=status.HTTP_200_OK)
         except Comment.DoesNotExist:
             return Response({
@@ -456,9 +456,11 @@ class CommentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
             }, status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, *args, **kwargs):
-        # URL에서 ID로 댓글 조회
+        comment_id = kwargs['pk']
+        post_id = kwargs['post_id']  # 게시물 ID 가져오기
         try:
-            comment = self.get_object()
+            # 특정 게시물에 속하는 댓글을 조회
+            comment = self.get_queryset().filter(post_id=post_id).get(id=comment_id)
             serializer = self.get_serializer(comment, data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -476,17 +478,20 @@ class CommentRetrieveUpdateDestroyAPIView(generics.RetrieveUpdateDestroyAPIView)
             }, status=status.HTTP_404_NOT_FOUND)
 
     def delete(self, request, *args, **kwargs):
+        comment_id = kwargs['pk']
+        post_id = kwargs['post_id']  # 게시물 ID 가져오기
         try:
-            comment = self.get_object()
+            # 특정 게시물에 속하는 댓글을 조회
+            comment = self.get_queryset().filter(post_id=post_id).get(id=comment_id)
             comment.delete()
             return Response({
-                "success": "true",
+                "success": True,
                 "status_code": status.HTTP_204_NO_CONTENT,
                 "message": "댓글 삭제"
             }, status=status.HTTP_204_NO_CONTENT)
-        except:
+        except Comment.DoesNotExist:
             return Response({
-                "success": "false",
+                "success": False,
                 "status_code": status.HTTP_404_NOT_FOUND,
                 "message": "댓글을 찾을 수 없음"
             }, status=status.HTTP_404_NOT_FOUND)
