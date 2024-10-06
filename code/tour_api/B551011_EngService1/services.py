@@ -1,5 +1,5 @@
 import requests
-from config.settings import API_KEY
+from config.settings.base import API_KEY
 
 def fetch_searchKeyword1(keyword, limit, page, areacode=None, content_type_id=None):
     base_url = 'http://apis.data.go.kr/B551011/EngService1/searchKeyword1'
