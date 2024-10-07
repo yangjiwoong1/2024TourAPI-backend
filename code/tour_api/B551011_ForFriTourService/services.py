@@ -22,6 +22,5 @@ def fetch_locationBasedList(map_x, map_y, radius, limit, page, arrange=None, con
         params['contentTypeId'] = content_type_id
 
     response = requests.get(base_url, params=params)
-    print(API_KEY)
 
     return response
