@@ -302,6 +302,8 @@ class PostListView(generics.ListAPIView):
             errors['title'] = ["제목을 입력해야 합니다."]
         if not content:
             errors['content'] = ["내용을 입력해야 합니다."]
+        if not area_code: 
+            errors['area_code'] = ["방문 지역을 선택해주세요"]
     
         if errors:
             return Response(
