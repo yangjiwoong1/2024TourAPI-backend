@@ -16,12 +16,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-
+from django.conf.urls.static import static
+from django.conf import settings
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/users/', include('accounts.urls')),
     path('api/posts/', include('boards.urls')), 
     path('api/favorites/', include('favorites.urls')),
     path('api/plans/', include('planners.urls')),
-    path('api/tour/', include('tour_api.urls'))
-]
+    path('api/tour/', include('tour_api.urls')),
+    path('api/weather/',include('weatherapi.urls'))
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

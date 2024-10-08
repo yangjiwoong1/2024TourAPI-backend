@@ -42,7 +42,7 @@ class Like(models.Model):
 ##이미지
 class Image(models.Model):
     post_id = models.ForeignKey(Post, related_name='images', on_delete=models.CASCADE)  # 연결된 게시물
-    url = models.URLField(max_length=512)  # 이미지 URL
+    image = models.ImageField(upload_to='image/',null=True, blank = True)  # 이미지 URL
 
     def __str__(self):
         return f'post 제목 {self.post.title}'

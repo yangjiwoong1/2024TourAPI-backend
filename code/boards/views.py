@@ -229,7 +229,7 @@ class PopularPostListAPIView(generics.ListAPIView):
 #post 전체 보기 및 생성
 
 class PostListView(generics.ListAPIView):
-    serializer_class = PostPreviewSerializer
+    serializer_class = PostSerializer
     queryset = Post.objects.all()
     pagination_class = PostPagination
     def get_queryset(self):
@@ -284,6 +284,7 @@ class PostListView(generics.ListAPIView):
             "message": "게시물 목록 조회 성공",
             "posts": serializer.data  
         }, status=status.HTTP_200_OK)
+    
     def post(self, request, *args, **kwargs):
     # 권한 확인
         permission_classes = [IsAuthorOrAdmin]
@@ -324,13 +325,13 @@ class PostListView(generics.ListAPIView):
     # 이미지가 있으면 저장
         if images:
             for image_url in images:
-                Image.objects.create(post_id=post, url=image_url)
+                Image.objects.create(post_id=post, image=image_url)
 
     # 게시글 직렬화 및 응답
         serializer = self.get_serializer(post)
         return Response(
             {
-                'success': "True",
+                'success': True,
                 'status_code': status.HTTP_201_CREATED,   
                 "message": "게시글 생성 성공",
                 "post": serializer.data

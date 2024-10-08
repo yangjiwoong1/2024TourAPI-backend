@@ -32,18 +32,21 @@ class LikeSerializer(serializers.ModelSerializer):
 class ImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Image
-        fields = ['id', 'url']
+        fields = ['id', 'image']
 
 
 class PostSerializer(serializers.ModelSerializer):
     comments = CommentSerializer(many=True, read_only=True)
     is_updated = serializers.SerializerMethodField()
     author_nickname = serializers.CharField(source='author.nickname', read_only=True)
+    images = ImageSerializer(many=True, read_only = True)
+    comments_count = serializers.IntegerField(read_only=True)
+    likes_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Post
-        fields = ['id', 'author','author_nickname', 'title', 'content', 'views', 'area_code', 'hashtags', 
-                  'created_at', 'updated_at', 'is_updated', 'comments']
+        fields = ['id', 'author','author_nickname', 'title', 'content','images', 'views', 'area_code', 'hashtags', 
+                  'created_at', 'updated_at', 'is_updated', 'comments','comments_count','likes_count']
 
     def get_is_updated(self, obj):
         return obj.created_at != obj.updated_at  # 수정 여부
