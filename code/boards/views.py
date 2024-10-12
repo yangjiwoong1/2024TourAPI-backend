@@ -178,7 +178,7 @@ class PopularPostListAPIView(generics.ListAPIView):
                 likes_count=Count('likes'),  
                 comments_count=Count('comments')
             )
-            .filter(created_at__gte=start_date, likes_count__gte=10)  # 좋아요 10개 이상 필터
+            .filter(created_at__gte=start_date, likes_count__gte=1)  # 좋아요 10개 이상 필터
             .order_by('-likes_count')  # 좋아요 수 기준 정렬
         )
 
@@ -266,13 +266,24 @@ class PostListView(generics.ListAPIView):
                 "posts": []
         }, status=status.HTTP_200_OK)
 
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            response = self.get_paginated_response(serializer.data)
+
+            response.data['success'] = "true"
+            response.data['status_code'] = status.HTTP_200_OK
+            response.data['message'] = "게시물 목록 조회 성공"
+
+            return response
+
+    # 페이지네이션이 없는 경우 처리
         serializer = self.get_serializer(queryset, many=True)
-        
         return Response({
             "success": "true",
-            "status code": status.HTTP_200_OK,
+            "status_code": status.HTTP_200_OK,
             "message": "게시물 목록 조회 성공",
-            "posts": serializer.data  
+            "posts": serializer.data
         }, status=status.HTTP_200_OK)
     
     def post(self, request, *args, **kwargs):
