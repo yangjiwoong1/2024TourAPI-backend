@@ -73,6 +73,7 @@ class PostRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
         post_response["likes_count"] = post_data.likes_count
         post_response["comments_count"] = post_data.comments_count
         post_response["author_nation"] = post.author.nation
+        post_response["is_author"] = is_author
         
         
        
