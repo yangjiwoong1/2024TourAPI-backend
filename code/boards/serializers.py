@@ -43,6 +43,7 @@ class PostSerializer(serializers.ModelSerializer):
     comments_count = serializers.IntegerField(read_only=True)
     likes_count = serializers.IntegerField(read_only=True)
 
+
     class Meta:
         model = Post
         fields = ['id', 'author','author_nickname', 'title', 'content','images', 'views', 'area_code', 'hashtags', 
@@ -54,20 +55,20 @@ class PostSerializer(serializers.ModelSerializer):
 
 class PostPreviewSerializer(serializers.ModelSerializer):
     author_nickname = serializers.CharField(source='author.nickname', read_only=True)
-    first_image = serializers.ImageField(source='images.first.url', allow_null=True, default=None)
+    first_image = serializers.SerializerMethodField()  # 첫 번째 이미지 가져오기
     likes_count = serializers.IntegerField(read_only=True)
     comments_count = serializers.IntegerField(read_only=True)
+    views = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Post
-        fields = ['id','author','first_image', 'title', 'author_nickname', 'views', 'created_at', 'likes_count', 'comments_count']
+        fields = [
+            'id', 'author',  'author_nickname','title','content', 'views', 'created_at',
+            'likes_count', 'comments_count', 'first_image'
+        ]
 
-
-class PopularPostPreviewSerializer(serializers.ModelSerializer):
-    author_nickname = serializers.CharField(source='author.nickname', read_only=True)
-    likes_count = serializers.IntegerField(read_only=True)
-    comments_count = serializers.IntegerField(read_only=True)
-
-    class Meta:
-        model = Post
-        fields = ['id','author','author_nickname','title','views','likes_count','comments_count']
+    def get_first_image(self, obj):
+        first_image = obj.images.first()  # Post에 연결된 첫 번째 이미지 가져오기
+        if first_image and first_image.image:  # 이미지가 있는지 확인
+            return first_image.image.url  # 이미지 URL 반환
+        return None  # 이미지가 없으면 None 반환

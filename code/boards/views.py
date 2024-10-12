@@ -2,13 +2,12 @@ from datetime import timedelta
 from django.utils import timezone
 from rest_framework import generics, permissions, status
 from .models import Post, Comment, Like, Image
-from .serializers import CommentSerializer, PostSerializer, LikeSerializer, PostPreviewSerializer,PopularPostPreviewSerializer
+from .serializers import CommentSerializer, PostSerializer, LikeSerializer, PostPreviewSerializer
 from rest_framework.response import Response
 from django.db.models import Count,Q
 import reverse_geocode
 from .permissions import IsAuthorOrAdmin
 from rest_framework.pagination import PageNumberPagination
-from django_filters import rest_framework as filters
 from django.db import models
 from rest_framework.exceptions import NotFound
 areacodes = {
@@ -58,31 +57,25 @@ class PostRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
         post.save()
         is_author = post.author == request.user
 
-        # 수정 여부 및 작성일/수정일 체크
-        if post.updated_at > post.created_at:
-            created_or_updated = f'Updated on {post.updated_at.strftime("%Y-%m-%d")}'
-        else:
-            created_or_updated = f'Created on {post.created_at.strftime("%Y-%m-%d")}'
-
-        # 좋아요 수 계산
-        like_count = post.likes.count()
-
+        post_data = (
+            Post.objects.annotate(
+                likes_count=Count('likes'),  # 좋아요 수 집계
+                comments_count=Count('comments')  # 댓글 수 집계
+            )
+            .filter(id=post.id)
+            .first()
+        )
         # 직렬화된 게시글 데이터
-        serializer = self.get_serializer(post)
-        post_data = serializer.data
+        serializer = self.get_serializer(post_data)
+        post_response = serializer.data
 
-        # 응답 데이터 구성
-        post_response = {
-            "author": post.author.username,
-            "author_nickname": post.author.nickname,
-            "created_or_updated": created_or_updated,
-            "views": post.views,
-            "like_count": like_count,
-            "content": post.content,
-            "hashtags": post.hashtags,
-            "is_author": is_author,
-            "comments": post_data.get('comments'),
-        }
+
+        post_response["likes_count"] = post_data.likes_count
+        post_response["comments_count"] = post_data.comments_count
+        post_response["author_nation"] = post.author.nation
+        
+        
+       
 
         return Response(
             {
@@ -100,13 +93,16 @@ class PostRetrieveUpdateDeleteAPIView(generics.RetrieveUpdateDestroyAPIView):
 
         title = request.data.get('title')
         content = request.data.get('content')
-        
+        area_code = request.data.get('area_code')
+        images = request.FILES
 
         errors = {}
         if not title:
             errors['title'] = ["제목을 입력해야 합니다."]
         if not content:
             errors['content'] = ["내용을 입력해야 합니다."]
+        if not area_code:
+            errors['area_code'] = ["방문 지역을 선택해주세요"]
 
         if errors:
             return Response(
@@ -160,13 +156,14 @@ class PostPagination(PageNumberPagination):
 
 #인기 게시물 보기
 class PopularPostListAPIView(generics.ListAPIView):
-    serializer_class = PopularPostPreviewSerializer
+    serializer_class = PostPreviewSerializer
     pagination_class = PostPagination
 
     def get_queryset(self):
         period = self.kwargs.get('period')
         now = timezone.now()
 
+        # 기간별 시작 날짜 설정
         if period == 'daily':
             start_date = now - timedelta(days=1)
         elif period == 'weekly':
@@ -174,18 +171,19 @@ class PopularPostListAPIView(generics.ListAPIView):
         elif period == 'monthly':
             start_date = now - timedelta(days=30)
         else:
-            return Post.objects.none()
-
-        return Post.objects.annotate(
-            like_count=Count('likes'),
-            comments_count=Count('comments')
-        ).filter(
-            created_at__gte=start_date,
-            like_count__gte=10  # 좋아요 10개 이상
-        ).order_by('-like_count')  # 좋아요 수 많은 순으로 정렬
+            return Post.objects.none()  # 잘못된 기간이면 빈 쿼리셋 반환
+        return (
+            Post.objects.annotate(
+                likes_count=Count('likes'),  
+                comments_count=Count('comments')
+            )
+            .filter(created_at__gte=start_date, likes_count__gte=10)  # 좋아요 10개 이상 필터
+            .order_by('-likes_count')  # 좋아요 수 기준 정렬
+        )
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
+
         if not queryset.exists():
             return Response(
                 {
@@ -197,34 +195,26 @@ class PopularPostListAPIView(generics.ListAPIView):
                 status=status.HTTP_200_OK
             )
 
-        serializer = self.get_serializer(queryset, many=True)
-        popular_posts = []
-        
-        # 강제로 like_count와 comments_count 추가
-        for post, data in zip(queryset, serializer.data):
-            post_response = {
-                "id": post.id,
-                "author": post.author.username,
-                "author_nickname": post.author.nickname,
-                "title": post.title,
-                "views": post.views,
-                "like_count": post.like_count,  # annotate된 필드 사용
-                "comments_count": post.comments_count  # annotate된 필드 사용
-            }
-            popular_posts.append(post_response)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response({
+                'success': "True",
+                'status_code': status.HTTP_200_OK,
+                "message": "인기 게시글 호출",
+                "popular_posts": serializer.data
+            })
 
+        serializer = self.get_serializer(queryset, many=True)
         return Response(
             {
                 'success': "True",
                 'status_code': status.HTTP_200_OK,
                 "message": "인기 게시글 호출",
-                "popular_posts": popular_posts
+                "popular_posts": serializer.data
             },
             status=status.HTTP_200_OK
         )
-
-
-
 
 #post 전체 보기 및 생성
 
@@ -249,7 +239,6 @@ class PostListView(generics.ListAPIView):
             queryset = queryset.filter(
                 Q(title__icontains=search_term) | Q(content__icontains=search_term) | Q(hashtags__icontains=search_term)
             )
-
         # Sort
         sort_by = self.request.query_params.get('sort_by', 'created_at') 
         if sort_by == 'likes':
