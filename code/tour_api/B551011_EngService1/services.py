@@ -1,5 +1,5 @@
 import requests
-from config.settings import API_KEY
+from config.settings.base import API_KEY
 
 def fetch_searchKeyword1(keyword, limit, page, areacode=None, content_type_id=None):
     base_url = 'http://apis.data.go.kr/B551011/EngService1/searchKeyword1'
@@ -20,7 +20,6 @@ def fetch_searchKeyword1(keyword, limit, page, areacode=None, content_type_id=No
         params['contentTypeId'] = content_type_id
 
     response = requests.get(base_url, params=params)
-    print(API_KEY)
 
     return response
 
@@ -43,7 +42,6 @@ def fetch_detailCommon1(contentId, limit, page):
     }
 
     response = requests.get(base_url, params=params)
-    print(API_KEY)
 
     return response
 
@@ -68,7 +66,6 @@ def fetch_locationBasedList1(map_x, map_y, radius, limit, page, arrange=None, co
         params['contentTypeId'] = content_type_id
 
     response = requests.get(base_url, params=params)
-    print(API_KEY)
 
     return response
 
@@ -86,7 +83,6 @@ def fetch_detailIntro1(contentId, content_type_id, limit, page):
     }
 
     response = requests.get(base_url, params=params)
-    print(API_KEY)
 
     return response
 
@@ -104,6 +100,5 @@ def fetch_detailInfo1(contentId, content_type_id, limit, page):
     }
 
     response = requests.get(base_url, params=params)
-    print(API_KEY)
 
     return response

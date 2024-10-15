@@ -103,6 +103,7 @@ class TouristAttractionDetailCommonView(APIView):
                 'zipcode': item.get('zipcode'),
                 'mapx': item.get('mapx'),
                 'mapy': item.get('mapy'),
+                'modifiedtime': item.get('modifiedtime')[:4] + '.' + item.get('modifiedtime')[4:6] + '.' + item.get('modifiedtime')[6:8],
                 'overview': item.get('overview'),
             }
             for item in items
@@ -149,7 +150,7 @@ class TouristAttractionDetailIntroView(APIView):
             'results': items
         }
         return Response(res, status=status.HTTP_200_OK)
-    
+
 class TouristAttractionDetailInfoView(APIView):
     def get(self, request, contentId):
         content_type_id = request.GET.get('contentTypeId') # required

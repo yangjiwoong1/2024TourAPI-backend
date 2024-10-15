@@ -1,5 +1,5 @@
 import requests
-from config.settings import API_KEY
+from config.settings.base import API_KEY
 
 def fetch_locationBasedList(map_x, map_y, radius, limit, page, arrange=None, content_type_id=None):
     base_url = 'http://apis.data.go.kr/B551011/ForFriTourService/locationBasedList'
@@ -22,6 +22,5 @@ def fetch_locationBasedList(map_x, map_y, radius, limit, page, arrange=None, con
         params['contentTypeId'] = content_type_id
 
     response = requests.get(base_url, params=params)
-    print(API_KEY)
 
     return response
