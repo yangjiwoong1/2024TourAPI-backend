@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     'boards.apps.BoardsConfig',
     'favorites.apps.FavoritesConfig',
     'planners.apps.PlannersConfig',
-    'weatherapi.apps.WeatherapiConfig',
 
 
     # 설치 라이브러리

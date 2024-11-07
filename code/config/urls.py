@@ -25,5 +25,4 @@ urlpatterns = [
     path('api/favorites/', include('favorites.urls')),
     path('api/plans/', include('planners.urls')),
     path('api/tour/', include('tour_api.urls')),
-    path('api/weather/',include('weatherapi.urls'))
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
