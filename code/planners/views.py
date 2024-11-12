@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .models import Plan, Destination
 from .serializers import PlanSerializer, DestinationSerializer
+from collections import defaultdict
 from utils import check_user_existence
 
 class PlanView(APIView):
