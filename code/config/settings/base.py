@@ -23,6 +23,7 @@ environ.Env.read_env(env_file=os.path.join(BASE_DIR, 'config', '.env'))
 SECRET_KEY = env('SECRET_KEY')
 API_KEY = env('API_KEY')
 
+
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
@@ -41,6 +42,7 @@ INSTALLED_APPS = [
     'boards.apps.BoardsConfig',
     'favorites.apps.FavoritesConfig',
     'planners.apps.PlannersConfig',
+    'chatbot.apps.ChatbotConfig',
 
 
     # 설치 라이브러리
