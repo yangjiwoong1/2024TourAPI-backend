@@ -1,3 +1,10 @@
+# Ignore Flutter auto-generated files
+frontend/application/macos/flutter_export_environment.sh
+frontend/welcome/ios/Podfile
+frontend/welcome/ios/Flutter/*.xcconfig
+frontend/welcome/macos/Podfile
+frontend/welcome/macos/Flutter/*.xcconfig
+
 # Gradle files
 .gradle/
 build/
