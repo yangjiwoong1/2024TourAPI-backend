@@ -22,6 +22,7 @@ environ.Env.read_env(env_file=os.path.join(BASE_DIR, 'config', '.env'))
 
 SECRET_KEY = env('SECRET_KEY')
 API_KEY = env('API_KEY')
+DJANGO_SETTINGS_MODULE = env('DJANGO_SETTINGS_MODULE')
 
 
 # Quick-start development settings - unsuitable for production
